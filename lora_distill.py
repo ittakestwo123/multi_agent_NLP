@@ -113,8 +113,10 @@ def main():
         data_collator=collator,
     )
     trainer.train()
-    model.save_pretrained(out_dir)
-    tokenizer.save_pretrained(out_dir)
+    # ensure str path for HF save_pretrained
+    save_dir = str(out_dir)
+    model.save_pretrained(save_dir)
+    tokenizer.save_pretrained(save_dir)
     (out_dir / 'RUN_INFO.txt').write_text(
         f"Model: {args.model}\nLoRA r={lora_cfg.r}, alpha={lora_cfg.lora_alpha}, dropout={lora_cfg.lora_dropout}\nQLoRA={args.qlora}\nRows={len(rows)}\nEpochs={args.epochs}\nBatch={args.batch}\nGradAccum={grad_acc}\nMaxLen={args.max_length}\nSeed={args.seed}\n", encoding='utf-8'
     )

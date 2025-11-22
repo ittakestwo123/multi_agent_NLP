@@ -38,7 +38,9 @@ class DummyLLM:
 
 
 class HTTPFallbackChat:
-    """直接使用 OpenAI 兼容接口的简单回退客户端。满足 .invoke(dict|str) 接口。"""
+    """
+直接使用 OpenAI 兼容接口的简单回退客户端。满足 .invoke(dict|str) 接口。
+    """
     def __init__(self, base_url: str, api_key: str, model: str, timeout: float = 30.0):
         self.base_url = base_url.rstrip('/')
         self.api_key = api_key
@@ -51,7 +53,7 @@ class HTTPFallbackChat:
             self.endpoint = f"{self.base_url}/v1/chat/completions"
     def invoke(self, prompt: Dict | str):
         if isinstance(prompt, dict):
-            # 将字典内容拼合为 user 消 Messages
+            # 将字典内容拼合为 user 消息
             user_content = '\n'.join(f"{k}: {v}" for k, v in prompt.items())
         else:
             user_content = str(prompt)
@@ -335,7 +337,8 @@ class DualAgentAcademicSystem:
     def _parse_scores(self, feedback: str) -> Dict[str, float]:
         import json as _json
         import re as _re
-        m = _re.search(r'\{\s*"quality".*?\}', feedback, flags=_re.S)
+        # 使用原始字符串避免冗余转义告警
+        m = _re.search(r"\{\s*\"quality\".*?\}", feedback, flags=_re.S)
         if not m:
             return {}
         blob = m.group(0)
