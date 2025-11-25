@@ -50,14 +50,6 @@ from multi_agent_nlp_project import (
     generate_html_report
 )
 
-# 导入评估指标模块
-try:
-    from metrics import AcademicMetrics
-    HAS_METRICS = True
-except ImportError:
-    HAS_METRICS = False
-    AcademicMetrics = None
-
 # 配置日志
 logging.basicConfig(
     level=logging.INFO,
@@ -230,22 +222,7 @@ def run_text_optimization_task(task_id: str, text: str, requirements: List[str],
                     print(f"✅ Round {r} 完成 | 评分: {last_scores if last_scores else '{}'}")
                     time.sleep(0.15)
                 
-                task_manager.update_task(self.task_id, progress=95, message='计算最终评估指标...')
-                
-                # 计算advanced_metrics
-                advanced_metrics = {}
-                if HAS_METRICS:
-                    try:
-                        result_metrics = AcademicMetrics.overall_quality_score(current_text)
-                        if result_metrics and 'scores' in result_metrics:
-                            advanced_metrics = result_metrics['scores']
-                    except Exception as e:
-                        print(f"Warning: Failed to calculate advanced metrics: {e}")
-                
-                # 将advanced_metrics添加到最后一条日志中
-                if self.collaboration_log:
-                    self.collaboration_log[-1]['advanced_metrics'] = advanced_metrics
-                
+                task_manager.update_task(self.task_id, progress=95, message='准备最终结果...')
                 return current_text, self.collaboration_log
         
         # 初始化实时智能体系统
@@ -260,11 +237,6 @@ def run_text_optimization_task(task_id: str, text: str, requirements: List[str],
         # 执行优化
         final_text, log = system.collaborate(text, requirements, language, rounds)
         
-        # 提取advanced_metrics（如果有）
-        advanced_metrics = {}
-        if log and 'advanced_metrics' in log[-1]:
-            advanced_metrics = log[-1]['advanced_metrics']
-        
         # 完成任务
         task_manager.update_task(
             task_id, 
@@ -275,8 +247,7 @@ def run_text_optimization_task(task_id: str, text: str, requirements: List[str],
                 'final_text': final_text,
                 'log': log,
                 'original_text': text,
-                'requirements': requirements,
-                'advanced_metrics': advanced_metrics
+                'requirements': requirements
             }
         )
         
