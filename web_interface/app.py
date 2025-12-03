@@ -425,43 +425,9 @@ def run_file_optimization_task(task_id: str, file_content: str, requirements: Li
 
 def run_synthesis_task(task_id: str, seeds: List[str], requirements: List[str], rounds: int = 3):
     """运行数据合成任务"""
-    try:
-        task_manager.update_task(task_id, status='running', progress=10)
-
-        # 使用与项目根目录一致的系统配置
-        system = DualAgentAcademicSystem(llm, TOOLS, vectorstore)
-
-        task_manager.update_task(task_id, progress=20)
-
-        # 执行数据合成（multi_agent_nlp_project.synthesize_dataset 默认写入项目根目录下的 data/）
-        output_path = system.synthesize_dataset(seeds, requirements, rounds)
-
-        # 标准化输出路径：统一转为 Path，并解析为绝对路径
-        # 这里不使用 __file__ 相对路径，而是依赖 synthesize_dataset 内部使用的项目根目录 data
-        if not isinstance(output_path, Path):
-            output_path = Path(output_path)
-        abs_output_path = output_path.resolve()
-
-        task_manager.update_task(
-            task_id,
-            status='completed',
-            progress=100,
-            result={
-                # 返回绝对路径，指向项目根目录下的 data/*.jsonl
-                'output_path': str(abs_output_path),
-                'seeds_count': len(seeds),
-                'requirements': requirements
-            }
-        )
-
-    except Exception as e:
-        logger.error(f"Synthesis task {task_id} failed: {e}")
-        logger.error(traceback.format_exc())
-        task_manager.update_task(
-            task_id,
-            status='failed',
-            error=str(e)
-        )
+    # 数据合成功能已移除（后端）
+    # 该函数保留为占位，以避免模块导入时找不到符号。
+    task_manager.update_task(task_id, status='failed', error='Data synthesis is disabled in this deployment')
 
 
 def run_evaluation_task(task_id: str, test_cases: List[tuple[str, List[str]]], rounds: int = 2):
@@ -625,44 +591,10 @@ def optimize_file():
 
 @app.route('/api/synthesize', methods=['POST'])
 def synthesize_data():
-    """数据合成API"""
-    try:
-        data = request.get_json()
-
-        seeds_text = data.get('seeds', '').strip()
-        seeds = [line.strip() for line in seeds_text.split('\n') if line.strip()]
-
-        if not seeds:
-            return jsonify({'status': 'error', 'message': '种子文本不能为空'}), 400
-
-        requirements_str = data.get('requirements', '学术表达提升,结构清晰,可读性增强')
-        rounds = int(data.get('rounds', 3))
-
-        requirements = parse_requirements(requirements_str, ['学术表达提升'])
-
-        # 创建任务
-        task_id = task_manager.create_task('synthesis', {
-            'seeds': seeds,
-            'requirements': requirements,
-            'rounds': rounds
-        })
-
-        # 启动后台任务
-        thread = threading.Thread(
-            target=run_synthesis_task,
-            args=(task_id, seeds, requirements, rounds)
-        )
-        thread.start()
-
-        return jsonify({
-            'status': 'success',
-            'task_id': task_id,
-            'message': '数据合成任务已启动'
-        })
-
-    except Exception as e:
-        logger.error(f"Data synthesis failed: {e}")
-        return jsonify({'status': 'error', 'message': str(e)}), 500
+    """数据合成 API 已被禁用。前端与 API 已移除以节省部署空间。
+    若需要在命令行运行合成，请使用 `python multi_agent_nlp_project.py synthesize`。
+    """
+    return jsonify({'status': 'error', 'message': 'Data synthesis API is disabled on this server'}), 410
 
 
 @app.route('/api/evaluate', methods=['POST'])
