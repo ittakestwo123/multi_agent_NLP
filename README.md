@@ -6,6 +6,8 @@
 - Agent B（教师 / Reviewer）：基于高质量 LLM（如 DeepSeek）给出评分和改进建议，也可在无 API 的情况下退化为 DummyLLM。
 - 多轮交互后生成：优化后的文本 + 每轮改写与评分日志 + HTML / JSON 报告，可用于**论文打磨、教学展示、数据合成与蒸馏、小模型增强**等。
 
+> **📖 技术文档**：详细的数据生成过程和模型优化原理请参阅 [TECHNICAL_DOCUMENTATION.md](TECHNICAL_DOCUMENTATION.md)
+
 ---
 ## 目录
 1. 项目概览与目标  
